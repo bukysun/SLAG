@@ -35,3 +35,13 @@ venv.bak/
 /.idea/misc.xml
 /.idea/modules.xml
 /.idea/vcs.xml
+
+# Exp settings
+static/*
+data/2wikimultihopqa/colbert/*
+data/hotpotqa/colbert/*
+data/musique/colbert/*
+models/colbertv2.0/*
+**/__pycache__/**
+.aim/*
+nohup.out

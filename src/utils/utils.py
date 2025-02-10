@@ -13,14 +13,12 @@ import asyncio
 from urllib import parse
 from typing import Dict, Any, Optional, List
 
+from hashlib import md5
 from pymilvus.exceptions import ConnectionConfigException
 from langchain_core.runnables.base import RunnableSerializable
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.messages import AIMessage
 from langchain_openai.chat_models import ChatOpenAI
-
-from luluai.utils.ai_model_sdk.constants import DEV_BASE_URL
-from luluai.langchain_contrib.retrievers.rerankers import LuLuReranker
 
 
 
@@ -79,13 +77,6 @@ def load_prompt_examples(file_name: str) -> List[Dict[str, str]]:
             examples.append(record)
     return examples
 
-
-def create_lulu_reranker():
-    return LuLuReranker(
-        aimodel_appid="AIGC",
-        aimodel_secretkey="feyji5b7s0crls3pdsyg78g3",
-        aimodel_environment_url=DEV_BASE_URL
-    )
 
 
 def single2double_quote(ai_message: AIMessage):
@@ -153,3 +144,7 @@ def get_node_name_in_kg(node: Dict[str, Any]) -> Optional[str]:
         return node['name']
     else:
         return None
+
+def compute_mdhash_id(content, prefix: str = ""):
+    """Generate md5 hash id with prefix"""
+    return prefix + md5(content.encode()).hexdigest()

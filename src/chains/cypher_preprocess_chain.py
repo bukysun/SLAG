@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from langchain.chains.base import Chain
 from langchain_core.callbacks import CallbackManagerForChainRun
 
-from src.utils.tools import CypherPreprocessor
+from utils.tools import CypherPreprocessor
 
 
 class CypherPreprocessorsChain(Chain):

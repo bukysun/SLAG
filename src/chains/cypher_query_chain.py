@@ -61,7 +61,7 @@ class CypherQueryChain(Chain):
     def _prepare_chain_result(self, inputs: Dict[str, Any], results: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Add output and intermediate record"""
         chain_result = {
-            self.output_key: results
+            self.output_key: str(results)
         }
         if self.return_intermediate_steps:
             intermediate_steps = inputs.get(self.intermediate_steps_key, []) + [{self.output_key: results}]

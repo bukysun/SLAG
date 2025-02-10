@@ -116,7 +116,7 @@ ENTITY_LINK_REVIEW_PROMPT = PromptTemplate(
 )
 
 
-IRCOT_TEMPLATE = """
+REASON_TEMPLATE = """
 Task: Based on the provided background knowledge, answer the question step by step. If the question ultimately remains unanswered, generate a new question combining the information already answered, and return the main subject(s) of the new question.
 
 Requirements:
@@ -140,11 +140,11 @@ Background: {background}
 Answer:
 """
 
-IRCOT_PROMPT_EN = PromptTemplate(
+REASON_PROMPT = PromptTemplate(
     input_variables=["examples", "question", "background"],
-    template=IRCOT_TEMPLATE
+    template=REASON_TEMPLATE
 )
 
-IRCOT_EXAMPLE_PROMPT_EN = PromptTemplate.from_template(
+REASON_EXAMPLE_PROMPT = PromptTemplate.from_template(
     "Question: {question}\nBackground: {background}\nAnswer: {output}"
 )

@@ -12,7 +12,7 @@ from langchain_core.runnables.base import RunnableSerializable
 from langchain_core.callbacks import CallbackManagerForChainRun
 
 
-from src.utils.utils import fill_prompt_template, load_prompt_examples, single2double_quote
+from utils.utils import fill_prompt_template, load_prompt_examples
 
 
 class ReasonChain(Chain):
@@ -41,7 +41,6 @@ class ReasonChain(Chain):
             example_prompt_template: BasePromptTemplate,
             example_file: str,
             return_intermediate_steps: bool = True,
-            add_json_preprocess = True,
             **kwargs
     ):
         examples = load_prompt_examples(example_file)
@@ -50,10 +49,7 @@ class ReasonChain(Chain):
         )
         prompt_template = prompt_template.partial(examples=example_for_slots)
 
-        if add_json_preprocess:
-            cot_chain = prompt_template | llm | single2double_quote | JsonOutputParser()
-        else:
-            cot_chain = prompt_template | llm | JsonOutputParser()
+        cot_chain = prompt_template | llm | JsonOutputParser()
             
         super().__init__(
             cot_chain=cot_chain,

@@ -8,8 +8,8 @@ from langchain.chains.base import Chain
 from langchain_community.graphs import Neo4jGraph
 from langchain_core.callbacks.manager import CallbackManagerForChainRun
 
-from src.utils.tools import MultihopsExpansion
-from src.utils.utils import graph_result_contains_triple, get_triples_from_graph_result, get_node_name_in_kg
+from utils.tools import MultihopsExpansion
+from utils.utils import graph_result_contains_triple, get_triples_from_graph_result, get_node_name_in_kg
 
 
 class NodesExpansionChain(Chain):

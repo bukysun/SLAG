@@ -15,9 +15,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_openai.chat_models import ChatOpenAI
 from langchain_community.graphs import Neo4jGraph
 
-from luluai.langchain_contrib.retrievers.rerankers import LuLuReranker
 
-from src.prompt_template import (
+from prompt_template import (
     ENTITY_LINK_REVIEW_PROMPT,
     DEFAULT_COMPLETION_DELIMITER,
     DEFAULT_RECORD_DELIMITER,
@@ -25,10 +24,11 @@ from src.prompt_template import (
     ENTITY_LINK_REVIEW_PROMPT
 )
 
-from src.utils.utils import process_entity_with_etf, split_string_by_multi_markers
+from utils.utils import  split_string_by_multi_markers
+from utils.reranker import BGEReranker
 
 
-class EntityLinkMultiSourceChain(Chain):
+class EntityLinkChain(Chain):
     """Entity link
 
     Args:
@@ -47,7 +47,7 @@ class EntityLinkMultiSourceChain(Chain):
     vector_store: VectorStore
     graph: Neo4jGraph
     whether_use_reranker: bool = False
-    reranker: Optional[LuLuReranker] = None
+    reranker: Optional[BGEReranker] = None
     prerank_topk: int = 100
     rerank_topk: int = 1
     search_timeout: float = 2000
@@ -195,6 +195,8 @@ class EntityLinkMultiSourceChain(Chain):
         # rerank with bge reranker
         if self.whether_use_reranker:
             results = self.reranker.compress_documents(results, entity)
+
+        results = results[:self.rerank_topk]
     
         # parse result
         linked_entities = []

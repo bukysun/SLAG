@@ -10,7 +10,7 @@ from langchain_core.callbacks import CallbackManagerForChainRun
 from langchain_core.runnables.base import RunnableSerializable
 from langchain_core.output_parsers import JsonOutputParser
 
-from src.utils.utils import fill_prompt_template, load_prompt_examples, single2double_quote
+from utils.utils import fill_prompt_template, load_prompt_examples
 
 
 class NERLLMChain(Chain):
@@ -45,7 +45,7 @@ class NERLLMChain(Chain):
             )
             prompt_template = prompt_template.partial(examples=example_for_slots)
 
-        ner_chain = prompt_template | llm | single2double_quote | JsonOutputParser()
+        ner_chain = prompt_template | llm | JsonOutputParser()
         super().__init__(
             ner_chain=ner_chain,
             return_intermediate_steps=return_intermediate_steps,
