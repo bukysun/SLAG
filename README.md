@@ -1,113 +1,247 @@
-<h1 align="center"> SLAG <br> Enhancing LLMs for Expert Question Answering by Synergizing <br> with Knowledge Graphs </h1>
+<div align="center">
 
-**SLAG** a QA framework for expert fields by **S**ynergizing large **L**anguage models **A**nd knowledge **G**raphs. It is designed to improve the correctness of KG retrieval and to intelligently coordinate KG retrievers with other retrieval methods through bidirectional enhancement between LLMs
-and KGs:
-* a LLM-Enhanced KG retriever is proposed to resolve entity ambiguities in queries and to accurately extract pertinent sub-graphs.
-* a KG-Enhanced LLM reasoner is designed to distill sub-graphs and to flexibly generate answers or explicit queries for cooperative retrievers.
+# SLAG
 
-![SLAG](images/overview.png)
+### Enhancing LLMs for Expert Question Answering by Synergizing With Knowledge Graphs
 
-Since the privacy policy of our company, we only provide an open-source version of SLAG on three public datasets, 2wikimultihopqa, musique and hotpotqa, where the knowledge graphs are extracted with OpenIE. The experiment and performance can be reproduced for the public datasets, while the experiments on the financial datasets is not inluded in this repo due to the privacy of the used financial knowledge graph.  However, it is quite easy to deploy SLAG on a domain profession knowledge graph with strict schema, with a little code modification. 
+[![Paper](https://img.shields.io/badge/Paper-IEEE%20TKDE-00629B?style=flat-square&logo=ieee)](https://doi.org/10.1109/TKDE.2026.3731277)
+[![Python](https://img.shields.io/badge/Python-3.9-3776AB?style=flat-square&logo=python&logoColor=white)](#quick-start)
+[![Neo4j](https://img.shields.io/badge/Neo4j-5.20-4581C3?style=flat-square&logo=neo4j&logoColor=white)](#2-start-neo4j)
+[![Datasets](https://img.shields.io/badge/Benchmarks-2WikiMultiHopQA%20%7C%20HotpotQA%20%7C%20MuSiQue-6A5ACD?style=flat-square)](#open-source-scope)
 
-## Setup Environment
+**The paper has been accepted by IEEE Transactions on Knowledge and Data Engineering (TKDE).**
 
-Create a conda environment and install denpendency
+Shuoling Liu · Hui Wu · Kun Yi · Pengtao Yang · Liyuan Chen · Kai Chen · Qiang Yang
 
-```shell
-conda create -n SLAG python=3.9
-conda activate SLAG
-pip install -r requirements.txt
+[[Paper](https://doi.org/10.1109/TKDE.2026.3731277)] · [[Overview](#overview)] · [[Quick Start](#quick-start)] · [[Evaluate](#evaluation)] · [[Citation](#citation)]
+
+</div>
+
+## Overview
+
+**SLAG** is a framework for expert question answering that **S**ynergizes **L**arge language models **A**nd knowledge **G**raphs. It improves knowledge-graph retrieval and coordinates graph retrieval with text retrieval through bidirectional enhancement between LLMs and KGs.
+
+- **LLM-enhanced KG retrieval** resolves entity ambiguity in user questions and extracts relevant subgraphs more accurately.
+- **KG-enhanced LLM reasoning** distills retrieved subgraphs and dynamically produces either a final answer or an explicit follow-up query for a complementary retriever.
+- **Cooperative retrieval** combines structured graph evidence with unstructured corpus evidence for knowledge-intensive, multi-hop questions.
+
+Across datasets spanning different expert domains, tasks, and languages, SLAG achieves a **13% relative F1 improvement** over state-of-the-art methods on public benchmarks. It has also been deployed in an industrial financial QA system, where it outperformed the system's latest online version.
+
+<p align="center">
+  <img src="images/overview.png" alt="Overview of the SLAG framework" width="92%">
+</p>
+
+## Open-source scope
+
+This repository provides the reproducible, open-source implementation of SLAG on three public multi-hop QA datasets. Their knowledge graphs are extracted from the source corpora using OpenIE, following the data-construction setting inspired by [HippoRAG](https://github.com/OSU-NLP-Group/HippoRAG).
+
+| Dataset | Task | Included resources |
+| --- | --- | --- |
+| [2WikiMultiHopQA](https://github.com/Alab-NII/2wikimultihop) | Multi-hop question answering | Dataset, corpus, KG-backed pipeline, and outputs |
+| [HotpotQA](https://hotpotqa.github.io/) | Explainable multi-hop question answering | Dataset, corpus, KG-backed pipeline, and outputs |
+| [MuSiQue](https://github.com/StonyBrookNLP/musique) | Compositional multi-hop question answering | Dataset, corpus, KG-backed pipeline, and outputs |
+
+Due to company data-privacy requirements, experiments on the proprietary financial knowledge graph are not included. The public implementation can be adapted to a domain knowledge graph with a strict schema by replacing the graph data and aligning the retrieval configuration.
+
+## Quick start
+
+### 1. Install dependencies
+
+```bash
+git clone https://github.com/EFundAI/SLAG.git
+cd SLAG
+
+conda create -n slag python=3.9 -y
+conda activate slag
+python -m pip install -r requirements.txt
 ```
 
-Download and setup Neo4j Desktop or Docker, we provide a docker command here.
-```shell
-docker run \
-  -p 7474:7475 -p 7687:7688 \
+### 2. Start Neo4j
+
+Install [Neo4j Desktop](https://neo4j.com/download/) or start Neo4j 5.20 with Docker:
+
+```bash
+docker run -d \
   --name multihop-public \
-  -e "NEO4J_AUTH=neo4j/neo4jneo4j" \
+  -p 7474:7474 \
+  -p 7687:7687 \
+  -e NEO4J_AUTH=neo4j/neo4jneo4j \
   -e NEO4J_apoc_export_file_enabled=true \
   -e NEO4J_apoc_import_file_enabled=true \
   -e NEO4J_apoc_import_file_use__neo4j__config=true \
-  -e NEO4J_PLUGINS=["apoc"] \
+  -e 'NEO4J_PLUGINS=["apoc"]' \
   neo4j:5.20.0
 ```
 
-Download and setup Milvus store. We provide a docker command here
-```shell
-# Download the installation script
-$ curl -sfL https://raw.githubusercontent.com/milvus-io/milvus/master/scripts/standalone_embed.sh -o standalone_embed.sh
+### 3. Start Milvus
 
-# Start the Docker container
-$ bash standalone_embed.sh start
+SLAG uses Milvus as its vector store. The following commands start the standalone deployment:
+
+```bash
+curl -sfL https://raw.githubusercontent.com/milvus-io/milvus/master/scripts/standalone_embed.sh \
+  -o standalone_embed.sh
+bash standalone_embed.sh start
 ```
 
-## Configuration
-The configuration include the LLM api config, Neo4j database config and Milvus store config. We prefer to use **dotenv** package to load config into environment. You can create an .env file in the root of your program and write like this:
-```Shell
-OPENAI_API_BASE=your.openai.base
-OPENAI_API_KEY=your.openai.key
-OPENAI_USER_NAME=your.username
+For other deployment options, see the [Milvus installation guide](https://milvus.io/docs/install_standalone-docker.md).
 
-NEO4J_URI=your.neo4j.uri
-NEO4J_USERNAME=your.neo4j.username
-NEO4J_PASSWORD=your.neo4j.password
-NEO4J_DATABASE=your.neo4j.database_name
+### 4. Configure services
 
-MILVUS_URI="http://password@your.milvus.uri:your.port"
+Create a `.env` file in the repository root:
+
+```dotenv
+OPENAI_API_BASE=https://your-openai-compatible-endpoint/v1
+OPENAI_API_KEY=your-api-key
+OPENAI_USER_NAME=your-user-name
+
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=neo4jneo4j
+NEO4J_DATABASE=neo4j
+
+MILVUS_URI=http://localhost:19530
 ```
 
-## Prepare Data
+> [!CAUTION]
+> Never commit API keys or production database credentials to the repository.
 
-Load knowledge graph backup into Neo4j database. The knowlegde graph is extracted from raw corpus with GPT-3.5 and OpenIE prompt, which is referred to [HippRAG](https://github.com/OSU-NLP-Group/HippoRAG.git). The backup is stored at ./data/mhkg.dump. Using the following command:
-```shell
-neo4j-admin load --from=./data/mhkg.dump --database=your_database --force
+### 5. Prepare the data
+
+Load the provided graph backup into Neo4j. Neo4j 5 expects the dump filename to match the target database, so first stage the included backup under the expected name:
+
+```bash
+mkdir -p ./data/neo4j-load
+cp ./data/mhkg.dump ./data/neo4j-load/neo4j.dump
+neo4j-admin database load neo4j \
+  --from-path=./data/neo4j-load \
+  --overwrite-destination=true
 ```
 
-Vectorize knowledge graph by embedding all the names of nodes into Milvus store with the following command:
-```shell
+The repository currently stores the backup as `data/mhkg.dump`. If Neo4j runs in Docker, copy or mount this file into the container's import directory before restoring it.
+
+Create the graph-node vector index in Milvus:
+
+```bash
 python src/vectorize_kg.py
 ```
 
-Chunking and vectorize corpus for RAG retriever with the following command:
-```shell
+Create the corpus indexes used by the RAG retrievers:
+
+```bash
 python src/vectorize_rag.py
 ```
 
 ## Running SLAG
 
-The main fuction is at `src/run_slag.py`. We provide two running mode, where **batch** is used to batch running slag on a dataset, and **server** is runnning a app with langserve to make single test and check intermediate steps.
+The entry point is [`src/run_slag.py`](src/run_slag.py). It supports batch evaluation and an interactive LangServe playground.
 
-### batch run mode
-running command:
-```shell
-python src/run_slag.py --dataset_name 2wikimultihopqa --run_mode batch --use_llm_review
+### Batch mode
+
+```bash
+python src/run_slag.py \
+  --dataset_name 2wikimultihopqa \
+  --run_mode batch \
+  --use_llm_review
 ```
-The batch mode will generate a result for the dataset, which is stored at `outputs/${dataset_name}/{dataset_name}_with_newquery_dataset.json`.
 
-### server run mode
-running command:
-```shell
-python src/run_slag.py --dataset_name 2wikimultihopqa --run_mode server --use_llm_review
+Replace `2wikimultihopqa` with `hotpotqa` or `musique` to run another supported dataset. Generated results are written to:
+
+```text
+outputs/<dataset_name>/<dataset_name>_with_newquery_dataset.json
 ```
-This command will start a web app using langserve. Visit `http://your_ip_address:7105/slag/playground` and type the question in the corresponding dataset for single test.
 
+### Server mode
 
-## Evaluate SLAG
+```bash
+python src/run_slag.py \
+  --dataset_name 2wikimultihopqa \
+  --run_mode server \
+  --use_llm_review
+```
 
+Then open the LangServe playground at [http://localhost:7105/slag/playground](http://localhost:7105/slag/playground) and submit a question from the selected dataset.
 
+### Main options
 
-### Evaluation in RAG
+| Option | Description | Default |
+| --- | --- | --- |
+| `--dataset_name` | `2wikimultihopqa`, `hotpotqa`, or `musique` | Required |
+| `--run_mode` | `batch` or `server` | Required |
+| `--use_llm_review` | Enable LLM review during entity linking | Disabled |
+| `--ner_llm_name` | Model used for named-entity recognition | `gpt-4o` |
+| `--reason_llm_name` | Model used for reasoning | `gpt-4o` |
+| `--review_llm_name` | Model used for entity-link review | `gpt-4o` |
+| `--reranker_model_path` | Local path or Hugging Face ID for the reranker | `BAAI/bge-reranker-v2-m3` |
 
-Compare the performance of three methods including Naive RAG, Hybrid RAG and SLAG on three public QA datasets:
-```shell
-# 2wikimultihopqa
+## Evaluation
+
+Compare Naive RAG, Hybrid RAG, and SLAG on the three public benchmarks:
+
+```bash
+# 2WikiMultiHopQA
 python src/run_eval_2wikimultihopqa.py
 
-# hotpotqa
+# HotpotQA
 python src/run_eval_hotpotqa.py
 
-# musique
+# MuSiQue
 python src/run_eval_musique.py
 ```
 
-Detailed scores are stored by aim. You can just run ```aim up``` to launch the web UI.
+Experiment metrics are tracked with [Aim](https://github.com/aimhubio/aim). Launch the local dashboard with:
+
+```bash
+aim up
+```
+
+## Repository structure
+
+```text
+SLAG/
+├── data/                   # Public datasets, corpora, and KG backup
+├── demonstrations/         # Few-shot NER and reasoning examples
+├── images/                 # README figures
+├── outputs/                # Reproducible public-dataset outputs
+├── src/
+│   ├── chains/             # Entity linking, graph exploration, and reasoning
+│   ├── eval/               # Dataset-specific evaluation utilities
+│   ├── rag_solutions/      # Naive RAG, Hybrid RAG, ColBERTv2, and SLAG
+│   ├── utils/              # Reranking and service helpers
+│   ├── run_slag.py         # Main batch/server entry point
+│   ├── vectorize_kg.py     # KG node indexing
+│   └── vectorize_rag.py    # Corpus indexing
+├── README.md
+└── requirements.txt
+```
+
+## Publication
+
+**Enhancing LLMs for Expert Question Answering by Synergizing With Knowledge Graphs**<br>
+Shuoling Liu, Hui Wu, Kun Yi, Pengtao Yang, Liyuan Chen, Kai Chen, and Qiang Yang<br>
+*IEEE Transactions on Knowledge and Data Engineering*, 2026<br>
+[https://doi.org/10.1109/TKDE.2026.3731277](https://doi.org/10.1109/TKDE.2026.3731277)
+
+The manuscript was received on May 12, 2025, revised on August 20, 2026, and accepted on August 29, 2026. Qiang Yang is the corresponding author.
+
+## Citation
+
+If you use SLAG in your research, please cite:
+
+```bibtex
+@article{liu2026enhancing,
+  author  = {Liu, Shuoling and Wu, Hui and Yi, Kun and Yang, Pengtao and
+             Chen, Liyuan and Chen, Kai and Yang, Qiang},
+  journal = {IEEE Transactions on Knowledge and Data Engineering},
+  title   = {Enhancing LLMs for Expert Question Answering by Synergizing With Knowledge Graphs},
+  year    = {2026},
+  doi     = {10.1109/TKDE.2026.3731277}
+}
+```
+
+---
+
+<div align="center">
+
+If SLAG helps your research, consider giving the repository a ⭐.
+
+</div>
