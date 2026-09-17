@@ -9,13 +9,15 @@
 [![Neo4j](https://img.shields.io/badge/Neo4j-5.20-4581C3?style=flat-square&logo=neo4j&logoColor=white)](#2-start-neo4j)
 [![Datasets](https://img.shields.io/badge/Benchmarks-2WikiMultiHopQA%20%7C%20HotpotQA%20%7C%20MuSiQue-6A5ACD?style=flat-square)](#open-source-scope)
 
-🎉 **Our work has been accepted by IEEE Transactions on Knowledge and Data Engineering (TKDE)! Welcome to star ⭐ and cite our work!**
-
 Shuoling Liu · Hui Wu · Kun Yi · Pengtao Yang · Liyuan Chen · Kai Chen · Qiang Yang
 
 [[Paper](https://doi.org/10.1109/TKDE.2026.3731277)] · [[Overview](#overview)] · [[Quick Start](#quick-start)] · [[Evaluate](#evaluation)] · [[Citation](#citation)]
 
+🎉 **Our work has been accepted by IEEE Transactions on Knowledge and Data Engineering (TKDE)! Welcome to star ⭐ and cite our work!**
+
 </div>
+
+---
 
 ## Overview
 
